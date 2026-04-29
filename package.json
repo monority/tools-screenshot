@@ -1,0 +1,20 @@
+{
+  "name": "capture-win",
+  "version": "1.0.0",
+  "description": "Capture a specific desktop window in high resolution via CLI or API",
+  "main": "src/index.js",
+  "bin": {
+    "capture-win": "bin/capture-win.js"
+  },
+  "scripts": {
+    "start": "node bin/capture-win.js"
+  },
+  "keywords": ["screenshot", "capture", "window", "high-resolution", "desktop"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "screenshot-desktop": "^1.15.0",
+    "sharp": "^0.33.2"
+  }
+}
