@@ -1,36 +1,45 @@
 const sharp = require('sharp');
+const fs = require('fs');
 const path = require('path');
+const { ENHANCE } = require('./config');
 
-async function enhance(buffer, { scale = 2, output = './capture.png' } = {}) {
+async function enhance(buffer, options = {}) {
+  const { scale = ENHANCE.DEFAULT_SCALE, output, targetWidth } = options;
   const meta = await sharp(buffer).metadata();
-  const originalWidth = meta.width;
-  const originalHeight = meta.height;
 
-  const targetWidth = Math.round(originalWidth * scale);
-  const targetHeight = Math.round(originalHeight * scale);
+  const finalWidth = targetWidth || Math.round(meta.width * scale);
+  const scaleFactor = finalWidth / meta.width;
+  const finalHeight = Math.round(meta.height * scaleFactor);
+
+  const pipeline = sharp(buffer)
+    .withMetadata({ icc: 'srgb' })
+    .resize({
+      width: finalWidth,
+      height: finalHeight,
+      kernel: 'lanczos3',
+    })
+    .sharpen(ENHANCE.SHARPEN);
 
   const ext = path.extname(output).toLowerCase();
-  let pipeline = sharp(buffer, { failOn: 'none' })
-    .resize(targetWidth, targetHeight, {
-      kernel: sharp.kernel.lanczos3,
-      fastShrinkOnLoad: false,
-    })
-    .sharpen({ sigma: 0.5, m1: 1.0, m2: 0.2, x1: 2, y2: 8, y3: 16 })
-    .withMetadata();
-
   if (ext === '.jpg' || ext === '.jpeg') {
-    pipeline = pipeline.jpeg({ quality: 100, chromaSubsampling: '4:4:4' });
+    pipeline.jpeg({ quality: ENHANCE.JPEG_QUALITY, chromaSubsampling: ENHANCE.JPEG_CHROMA_SUBSAMPLING });
+  } else if (ext === '.webp') {
+    pipeline.webp({ quality: ENHANCE.WEBP_QUALITY || 80 });
   } else {
-    pipeline = pipeline.png({ compressionLevel: 0 });
+    pipeline.png({ compressionLevel: ENHANCE.PNG_COMPRESSION });
   }
 
-  await pipeline.toFile(output);
+  const outBuffer = await pipeline.toBuffer();
+  const dir = path.dirname(output);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  await fs.promises.writeFile(output, outBuffer);
 
+  const outMeta = await sharp(outBuffer).metadata();
   return {
-    originalWidth,
-    originalHeight,
-    finalWidth: targetWidth,
-    finalHeight: targetHeight,
+    originalWidth: meta.width,
+    originalHeight: meta.height,
+    finalWidth: outMeta.width,
+    finalHeight: outMeta.height,
     output,
   };
 }
