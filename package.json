@@ -1,19 +1,27 @@
 {
-  "name": "capture-win",
+  "name": "screenshot-win",
   "version": "1.0.0",
-  "description": "Capture a specific desktop window in high resolution via CLI or API",
+  "description": "Capture a specific desktop window in high resolution with automatic navbar removal",
   "main": "src/index.js",
   "bin": {
-    "capture-win": "bin/capture-win.js"
+    "sw": "bin/screenshot-win.js",
+    "screenshot-win": "bin/screenshot-win.js"
   },
   "scripts": {
-    "start": "node bin/capture-win.js"
+    "start": "node bin/screenshot-win.js",
+    "list": "node bin/screenshot-win.js --list",
+    "sw": "node bin/screenshot-win.js"
   },
-  "keywords": ["screenshot", "capture", "window", "high-resolution", "desktop"],
+  "keywords": ["screenshot", "capture", "window", "navbar-removal", "desktop"],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "os": ["win32"],
   "dependencies": {
     "commander": "^11.1.0",
+    "prompts": "^2.4.2",
     "screenshot-desktop": "^1.15.0",
     "sharp": "^0.33.2"
   }
