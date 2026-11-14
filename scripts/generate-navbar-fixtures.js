@@ -1,0 +1,193 @@
+#!/usr/bin/env node
+/**
+ * Generates the synthetic navbar fixtures used by test/navbar-fixtures.test.js.
+ *
+ * Each fixture is a controlled luminance profile: every row paints a known
+ * fraction of "bright" pixels (luminance above the detector threshold). That
+ * gives the detector an exact expected navbar boundary without depending on a
+ * live desktop.
+ *
+ * Real browser captures can be added next to these files; register them in
+ * manifest.json with the expected navbar height and keep `synthetic: false`.
+ *
+ * Usage: node scripts/generate-navbar-fixtures.js
+ */
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const sharp = require('sharp');
+
+const OUT_DIR = path.join(__dirname, '..', 'test', 'fixtures', 'navbar');
+
+// Palette entries are RGB triples; `bright` is measured against the detector's
+// luminance threshold (35).
+const PALETTES = {
+  dark: { bright: [236, 238, 242], dim: [22, 24, 30], accent: [110, 160, 255] },
+  light: { bright: [250, 250, 250], dim: [18, 20, 24], accent: [70, 120, 220] },
+  graphite: { bright: [225, 228, 234], dim: [28, 30, 36], accent: [255, 150, 70] },
+};
+
+const CASES = [
+  {
+    file: 'firefox-dark-100.png',
+    browser: 'firefox',
+    theme: 'dark',
+    dpi: 100,
+    width: 1280,
+    height: 720,
+    tabStripEnd: 64,
+    navEnd: 104,
+    tabDensity: 0.55,
+    urlDensity: 0.98,
+    contentDensity: 0.42,
+  },
+  {
+    file: 'firefox-light-100.png',
+    browser: 'firefox',
+    theme: 'light',
+    dpi: 100,
+    width: 1280,
+    height: 720,
+    tabStripEnd: 58,
+    navEnd: 96,
+    tabDensity: 0.48,
+    urlDensity: 0.96,
+    contentDensity: 0.38,
+  },
+  {
+    file: 'chrome-light-125.png',
+    browser: 'chrome',
+    theme: 'light',
+    dpi: 125,
+    width: 1600,
+    height: 900,
+    tabStripEnd: 62,
+    navEnd: 105,
+    tabDensity: 0.52,
+    urlDensity: 0.97,
+    contentDensity: 0.4,
+  },
+  {
+    file: 'chrome-dark-150.png',
+    browser: 'chrome',
+    theme: 'dark',
+    dpi: 150,
+    width: 1920,
+    height: 1080,
+    tabStripEnd: 84,
+    navEnd: 132,
+    tabDensity: 0.5,
+    urlDensity: 0.99,
+    contentDensity: 0.36,
+  },
+  {
+    file: 'edge-light-100.png',
+    browser: 'msedge',
+    theme: 'graphite',
+    dpi: 100,
+    width: 1280,
+    height: 720,
+    tabStripEnd: 56,
+    navEnd: 92,
+    tabDensity: 0.46,
+    urlDensity: 0.95,
+    contentDensity: 0.44,
+  },
+  {
+    file: 'page-content-only.png',
+    browser: null,
+    theme: 'light',
+    dpi: 100,
+    width: 1280,
+    height: 720,
+    tabStripEnd: 0,
+    navEnd: 0,
+    tabDensity: 0,
+    urlDensity: 0,
+    contentDensity: 0.18,
+    expectedNavBarHeight: 0,
+  },
+];
+
+// Paint a row so exactly `round(density * samples)` out of `samples` sampled
+// pixels are bright. Real images add texture; the density profile is what the
+// detector consumes, so this keeps the fixture deterministic.
+function paintRow(data, width, y, channels, density, palette, urlBar) {
+  const samples = width / 4;
+  const bright = Math.round(density * samples);
+  for (let s = 0; s < samples; s++) {
+    const x = s * 4;
+    const isBright = s < bright;
+    const color = isBright ? palette.bright : urlBar ? palette.accent : palette.dim;
+    for (let dx = 0; dx < 4; dx++) {
+      const i = (y * width + x + dx) * channels;
+      data[i] = color[0];
+      data[i + 1] = color[1];
+      data[i + 2] = color[2];
+    }
+  }
+}
+
+async function buildFixture(spec) {
+  const { width, height } = spec;
+  const channels = 3;
+  const data = Buffer.alloc(width * height * channels);
+  const palette = PALETTES[spec.theme];
+  const urlBandHeight = 6;
+
+  for (let y = 0; y < height; y++) {
+    let density;
+    let urlBar = false;
+
+    if (spec.navEnd > 0 && y < spec.navEnd - urlBandHeight) {
+      density = y < spec.tabStripEnd ? spec.tabDensity : 0.12;
+    } else if (spec.navEnd > 0 && y < spec.navEnd) {
+      density = spec.urlDensity;
+      urlBar = true;
+    } else {
+      density = spec.contentDensity;
+    }
+
+    paintRow(data, width, y, channels, density, palette, urlBar);
+  }
+
+  const buffer = await sharp(data, { raw: { width, height, channels } }).png({ compressionLevel: 9 }).toBuffer();
+  const file = path.join(OUT_DIR, spec.file);
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  fs.writeFileSync(file, buffer);
+  return buffer;
+}
+
+async function main() {
+  const cases = [];
+
+  for (const spec of CASES) {
+    const buffer = await buildFixture(spec);
+    cases.push({
+      file: spec.file,
+      browser: spec.browser,
+      theme: spec.theme,
+      dpi: spec.dpi,
+      width: spec.width,
+      height: spec.height,
+      expectedNavBarHeight: spec.expectedNavBarHeight ?? spec.navEnd,
+      tolerancePx: 2,
+      synthetic: true,
+      sha256: crypto.createHash('sha256').update(buffer).digest('hex'),
+    });
+  }
+
+  const manifest = {
+    version: 1,
+    description: 'Navbar detection baselines. Synthetic fixtures are generated by scripts/generate-navbar-fixtures.js.',
+    cases,
+  };
+
+  fs.writeFileSync(path.join(OUT_DIR, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  console.log(`Wrote ${cases.length} fixtures to ${OUT_DIR}`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

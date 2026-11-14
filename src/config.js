@@ -1,15 +1,29 @@
 module.exports = {
   BROWSER_PROCESSES: [
-    'firefox', 'chrome', 'msedge', 'brave', 'opera', 'vivaldi', 'arc',
+    'firefox',
+    'chrome',
+    'msedge',
+    'brave',
+    'opera',
+    'vivaldi',
+    'arc',
+    // Firefox forks share the Mozilla window classes
+    'zen',
+    'librewolf',
+    'waterfox',
   ],
 
   CONTENT_CLASSES: {
-    'firefox': ['MozillaCompositorWindowClass', 'MozillaWindowClass'],
-    'chrome':  ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
-    'msedge':  ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
-    'brave':   ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
-    'opera':   ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
-    'vivaldi': ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
+    firefox: ['MozillaCompositorWindowClass', 'MozillaWindowClass'],
+    zen: ['MozillaCompositorWindowClass', 'MozillaWindowClass'],
+    librewolf: ['MozillaCompositorWindowClass', 'MozillaWindowClass'],
+    waterfox: ['MozillaCompositorWindowClass', 'MozillaWindowClass'],
+    chrome: ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
+    msedge: ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
+    brave: ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
+    opera: ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
+    vivaldi: ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
+    arc: ['Chrome_RenderWidgetHostHWND', 'Chrome_WidgetWin_1'],
   },
 
   NAVBAR: {
@@ -18,8 +32,6 @@ module.exports = {
     SAMPLE_STEP: 4,
     LUMINANCE_THRESHOLD: 35,
     SUSTAINED_HIGH_DENSITY: 0.85,
-    SUSTAINED_HIGH_COUNT: 8,
-    SUSTAINED_HIGH_CONTINUATION: 15,
     SUSTAINED_MODERATE_DENSITY: 0.25,
     SUSTAINED_MODERATE_COUNT: 12,
     PRECEDING_WINDOW_SIZE: 20,
@@ -49,5 +61,14 @@ module.exports = {
 
   FINDER: {
     POWERSHELL_TIMEOUT_MS: 12000,
+  },
+
+  PRINT_WINDOW: {
+    TIMEOUT_MS: 20000,
+    // A PrintWindow fallback that fails often returns a uniformly black bitmap.
+    // Reject only dark uniform images: a legitimately blank white window must
+    // still be capturable.
+    BLANK_LUMINANCE: 8,
+    BLANK_SAMPLES: 4000,
   },
 };

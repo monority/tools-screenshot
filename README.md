@@ -1,142 +1,122 @@
 <div align="center">
 
-# screenshot-win
+<img src="./logo-screenshot.svg" width="120" alt="tools-screenshot logo" />
 
-Capture any desktop window in high resolution from the CLI or Node.js API.
+# tools-screenshot
+
+Capture any window on Windows in high resolution, with the browser toolbar removed automatically.
 
 </div>
 
 ---
 
-## Features
+## What it does
 
-- Multi-monitor support
-- Upscaling via Lanczos3 + sharpening
-- Auto-removes browser navigation bar (Firefox, Chrome, Edge...)
-- No native compilation required
-- Windows only
+- Captures a specific window, not just the whole screen
+- Removes the browser navigation bar (Firefox, Chrome, Edge, Brave, Opera, Vivaldi, Arc, Zen…)
+- Makes the image larger and sharper
+- Handles multiple monitors
+- Saves as PNG, JPG or WebP
 
----
-
-## Installation
-
-```bash
-npm install -g screenshot-win
-```
-
-Or for development:
-
-```bash
-git clone <repo>
-cd screenshot-win
-npm install
-npm link
-```
+Works on Windows with Node.js 20.9 or newer.
 
 ---
 
-## CLI Usage
-
-### Quick start
+## Install
 
 ```bash
-# Interactive mode (shows menu with arrow keys)
+npm install -g tools-screenshot
+```
+
+This installs two commands: `sw` and `screenshot-win`.
+
+---
+
+## Quick start
+
+```bash
+# Pick a window from a menu
 sw
 
-# List open windows
+# See the available windows
 sw --list
 
-# Capture a window (2x by default)
+# Capture an app
 sw --app firefox
-sw --app msedge --scale 3
+sw --app chrome --scale 3
 
-# Capture with specific width
-sw --app firefox --width 1920
+# Choose the output file and format
+sw --app firefox --output ./shot.webp
 
-# WebP format
-sw --app firefox --output capture.webp
-
-# Keep the navigation bar
+# Keep the browser toolbar
 sw --app firefox --no-trim-nav
 ```
 
-### Interactive Menu
+By default, images are saved in `./captures/` and enlarged 2×.
 
-Run `sw` without arguments to access the interactive menu with arrow key navigation:
+If several windows belong to the same app, use the id shown by `--list`:
 
-1. **Select window** — Choose from detected windows
-2. **Set scale** — Configure upscaling factor (default: 2x)
-3. **Choose resolution** — Original, 1080p, 1440p, or 4K UHD
-4. **Choose format** — PNG, JPG, or WebP output
-
----
-
-## CLI Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--app <name>` | — | Process or window name to match |
-| `--scale <n>` | `2` | Upscaling factor (1, 2, 3...) |
-| `--width <n>` | — | Target width in pixels (overrides scale) |
-| `--output <path>` | auto | Override output path |
-| `--trim-nav` | auto | Force nav bar removal |
-| `--no-trim-nav` | — | Disable nav bar removal |
-| `--list` | — | List all visible windows |
-
-> Nav bar is automatically removed for: `firefox`, `chrome`, `msedge`, `opera`, `brave`, `vivaldi`
+```bash
+sw --id 12345678
+```
 
 ---
 
-## API Usage
+## Options
+
+| Option            | Description                              |
+| ----------------- | ---------------------------------------- |
+| `--app <name>`    | App or window name to capture            |
+| `--id <id>`       | Exact window id (shown by `--list`)      |
+| `--scale <n>`     | Enlargement factor, default `2`          |
+| `--width <n>`     | Target width in pixels (overrides scale) |
+| `--output <path>` | Output file (`.png`, `.jpg` or `.webp`)  |
+| `--trim-nav`      | Force toolbar removal                    |
+| `--no-trim-nav`   | Keep the toolbar                         |
+| `--list`          | List open windows                        |
+
+---
+
+## Use from code
 
 ```js
-const { capture, listWindows } = require('screenshot-win');
+const { capture, listWindows } = require('tools-screenshot');
 
-// List windows
+// List open windows: { id, title, process, isBrowser }
 const windows = listWindows();
 
 // Capture a window
 const result = await capture({
   app: 'firefox',
   scale: 2,
-  output: './captures/firefox.png',
+  output: './firefox.png',
 });
 
-console.log(result.originalWidth);  // 1920
-console.log(result.finalWidth);     // 3840
-console.log(result.trimmedPx);      // 120
+console.log(result.finalWidth, result.finalHeight);
+console.log(result.output);
 ```
 
-### API Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `app` | `string` | — | Process or window name |
-| `scale` | `number` | `2` | Upscaling factor |
-| `width` | `number` | — | Target width in pixels (overrides scale) |
-| `output` | `string` | `./capture.png` | Output file path |
-| `trimNav` | `boolean \| null` | `null` | `null` = auto, `true` = force, `false` = disable |
+Main options: `app`, `windowId`, `scale`, `width`, `output`, `trimNav`.
 
 ---
 
-## How it works
+## Good to know
 
-1. Window detection — PowerShell + `DwmGetWindowAttribute` returns exact visual bounds
-2. Display targeting — detects which monitor the window is on
-3. Crop — extracts the window region from the screenshot
-4. Nav bar trim — scans pixel row variance to detect browser UI boundary
-5. Upscaling — Lanczos3 resize + sharpening via `sharp`
+- **Windows only.**
+- If the window is behind another one, the tool tries to capture it directly. This works for most apps, but not all. For the best result, keep the window visible.
+- A window spread across several monitors is captured from the monitor where most of it is.
+- Toolbar removal is automatic for browsers. Use `--no-trim-nav` to keep it, or `--trim-nav` to force it on another app.
+- Minimized windows cannot be captured.
 
 ---
 
-## Dependencies
+## Development
 
-| Package | Purpose |
-|---------|---------|
-| `screenshot-desktop` | Cross-platform screen capture |
-| `sharp` | Image processing, upscaling, sharpening, WebP support |
-| `commander` | CLI argument parsing |
-| `prompts` | Interactive menu interface |
+```bash
+npm install
+npm test
+npm run check
+```
 
 ---
 
