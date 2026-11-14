@@ -12,7 +12,9 @@ const { capture, listWindows } = require('../src/index');
   });
 
   console.log(`Saved: ${result.output}`);
-  console.log(`Resolution: ${result.originalWidth}x${result.originalHeight} -> ${result.finalWidth}x${result.finalHeight}`);
+  console.log(
+    `Resolution: ${result.originalWidth}x${result.originalHeight} -> ${result.finalWidth}x${result.finalHeight}`,
+  );
 })().catch((err) => {
   console.error(err.message);
   process.exit(1);

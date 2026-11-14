@@ -1,31 +1,68 @@
 {
-  "name": "screenshot-win",
+  "name": "tools-screenshot",
   "version": "1.0.0",
-  "description": "Capture a specific desktop window in high resolution with automatic navbar removal",
+  "description": "Windows-only CLI and Node API to capture a specific desktop window in high resolution with automatic browser navbar removal",
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "bin": {
     "sw": "bin/screenshot-win.js",
     "screenshot-win": "bin/screenshot-win.js"
   },
+  "keywords": [
+    "screenshot",
+    "capture",
+    "window",
+    "navbar-removal",
+    "desktop"
+  ],
+  "author": "monority",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/monority/tools-screenshot.git"
+  },
+  "homepage": "https://github.com/monority/tools-screenshot#readme",
+  "bugs": {
+    "url": "https://github.com/monority/tools-screenshot/issues"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "files": [
+    "bin/",
+    "src/",
+    "logo-screenshot.svg"
+  ],
   "scripts": {
     "start": "node bin/screenshot-win.js",
     "list": "node bin/screenshot-win.js --list",
-    "sw": "node bin/screenshot-win.js"
-  },
-  "keywords": ["screenshot", "capture", "window", "navbar-removal", "desktop"],
-  "author": "",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
-  "os": ["win32"],
-  "overrides": {
-    "inflight": "file:patches/inflight"
+    "sw": "node bin/screenshot-win.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "fixtures": "node scripts/generate-navbar-fixtures.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/**/*.js --test-coverage-lines=90 --test-coverage-branches=85 --test-coverage-functions=90",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test",
+    "prepublishOnly": "npm run check"
   },
   "dependencies": {
-    "commander": "^11.1.0",
+    "commander": "^14.0.3",
     "prompts": "^2.4.2",
-    "screenshot-desktop": "^1.15.0",
-    "sharp": "^0.33.2"
+    "screenshot-desktop": "^1.15.8",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "^7.0.2"
   }
 }

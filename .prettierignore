@@ -1,0 +1,6 @@
+node_modules/
+captures/
+coverage/
+package-lock.json
+test/fixtures/**/*.png
+*.log
