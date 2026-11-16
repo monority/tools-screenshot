@@ -73,6 +73,18 @@
       "tolerancePx": 2,
       "synthetic": true,
       "sha256": "334b6e55e46497c1a98011e7df67344a50def5e4986fbeeff014fe2059fc783c"
+    },
+    {
+      "file": "zen-dark-100.png",
+      "browser": "zen",
+      "theme": "zen",
+      "dpi": 100,
+      "width": 1920,
+      "height": 1032,
+      "expectedNavBarHeight": 68,
+      "tolerancePx": 2,
+      "synthetic": true,
+      "sha256": "ba2a395cc3e45f54c88d801f59961bde61d9e546492c30fd47e252048133531d"
     }
   ]
 }

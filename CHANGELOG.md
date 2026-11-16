@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Navbar removal on browsers whose toolbar background reads as uniformly lit (Zen and other Firefox forks): a new chrome-block strategy cuts at the sustained density drop where page content starts.
+- Navbar detector no longer returns a 15px stub when the toolbar occupies the very top of the window.
+
+### Added
+
+- Synthetic navbar fixture for the Zen profile (`zen-dark-100.png`) covering the uniform chrome-block boundary.
+
 ## [1.0.0] - 2026-11-14
 
 ### Added

@@ -41,6 +41,12 @@ module.exports = {
     DENSITY_JUMP_WINDOW_AFTER: 4,
     VALIDATE_BAND_RATIO: 10,
     VALIDATE_MIN_CONFIDENCE: 0.2,
+    // Chrome-block strategy: browsers whose chrome background reads as fully
+    // lit (e.g. Zen's uniform gray) produce one long high-density band from
+    // row 0; chrome ends where density drops and stays low.
+    CHROME_BLOCK_MIN_ROWS: 30,
+    CHROME_BLOCK_DROP_FLOOR: 0.45,
+    CHROME_BLOCK_DROP_ROWS: 8,
   },
 
   CAPTURE: {

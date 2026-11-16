@@ -25,6 +25,9 @@ const PALETTES = {
   dark: { bright: [236, 238, 242], dim: [22, 24, 30], accent: [110, 160, 255] },
   light: { bright: [250, 250, 250], dim: [18, 20, 24], accent: [70, 120, 220] },
   graphite: { bright: [225, 228, 234], dim: [28, 30, 36], accent: [255, 150, 70] },
+  // Zen's chrome background is a uniform #323232 gray — above the detector's
+  // luminance threshold, so every chrome row reads as fully "bright".
+  zen: { bright: [50, 50, 50], dim: [13, 4, 15], accent: [70, 70, 70] },
 };
 
 const CASES = [
@@ -106,6 +109,23 @@ const CASES = [
     urlDensity: 0,
     contentDensity: 0.18,
     expectedNavBarHeight: 0,
+  },
+  {
+    // Zen profile measured on a live capture: the whole chrome is one uniform
+    // high-density block (URL bar + bookmarks rows all read as bright), page
+    // content is a dark page (density ~0.14). The boundary is a sustained
+    // density DROP, which the chrome-block strategy must find.
+    file: 'zen-dark-100.png',
+    browser: 'zen',
+    theme: 'zen',
+    dpi: 100,
+    width: 1920,
+    height: 1032,
+    tabStripEnd: 68,
+    navEnd: 68,
+    tabDensity: 0.99,
+    urlDensity: 0.99,
+    contentDensity: 0.14,
   },
 ];
 
